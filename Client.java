@@ -9,29 +9,26 @@ import java.net.Socket;
 
 import java.util.Scanner;
 
-public class Client{
+public class Client {
 	public static void main(String[] args) {
 		try {
-			Socket socket = new Socket("27.17.168.109",8888);
-			
-			
+			Socket socket = new Socket("localhost", 8888);
+
 			DataOutputStream out = new DataOutputStream(socket.getOutputStream());
 			Scanner input = new Scanner(System.in);
-			System.out.println("请输入要传输的信息：");
+			System.out.println("connected");
 			String s = input.nextLine();
-			while(s != null) {
-			
-			out.writeUTF(s);
-			s = input.nextLine();
+			while (s != null) {
+				out.writeUTF(s);
+				s = input.nextLine();
 			}
 			socket.close();
 			//in.close();
 			out.close();
 			input.close();
-			
-		}
-		catch(IOException ex) {
+
+		} catch (IOException ex) {
 			System.out.println(ex);
 		}
-		}
+	}
 }
