@@ -18,8 +18,6 @@ public class Server {
 			String clientInputStr = input.readUTF();//这里要注意和客户端输出流的写方法对应,否则会抛 EOFException
 			// 处理客户端数据
 			System.out.println("客户端发过来的内容:" + clientInputStr);
-			String s = input.readUTF();
-			System.out.println("server get:" + s);
 			socket.close();
 			input.close();
 			ss.close();
