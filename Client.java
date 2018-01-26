@@ -22,7 +22,7 @@ public class Client {
 				DataInputStream input = new DataInputStream(socket.getInputStream());
 				//向服务器端发送数据
 				DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-				System.out.print("请输入: \t");
+				System.out.print("客户请输入: \t");
 				String str = new BufferedReader(new InputStreamReader(System.in)).readLine();
 				out.writeUTF(str);
 

@@ -45,7 +45,7 @@ public class Server {
 
                 // 向客户端回复信息
                 DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-                System.out.print("请输入:\t");
+                System.out.print("服务器请输入:\t");
                 // 发送键盘输入的一行
                 String s = new BufferedReader(new InputStreamReader(System.in)).readLine();
                 out.writeUTF(s);
