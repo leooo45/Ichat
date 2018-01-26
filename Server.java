@@ -2,12 +2,13 @@ import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.InputStreamReader;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
 public class Server {
     public static final int PORT = 12345;//监听的端口号
-
+    private int count = 0;
     public static void main(String[] args) {
         System.out.println("服务器启动...\n");
         Server server = new Server();
@@ -16,13 +17,19 @@ public class Server {
 
     public void init() {
         try {
-            ServerSocket serverSocket = new ServerSocket(PORT);
+        	ServerSocket serverSocket = new ServerSocket(PORT);
             while (true) {
+            	 
+            	 
                 // 一旦有堵塞, 则表示服务器与客户端获得了连接
                 Socket client = serverSocket.accept();
                 // 处理这次连接
                 new HandlerThread(client);
-            }
+                count++;
+                System.out.println("服务器端被连接过的次数："+count);
+                InetAddress address = client.getInetAddress();
+                System.out.println("当前客户端的IP为："+address.getHostAddress());
+            }            
         } catch (Exception e) {
             System.out.println("服务器异常: " + e.getMessage());
         }
