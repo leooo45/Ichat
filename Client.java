@@ -1,54 +1,96 @@
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.Socket;
+import java.io.*;
+import java.net.*;
+import java.util.Scanner;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 public class Client {
-	public static final String IP_ADDR = "localhost";//服务器地址
-	public static final int PORT = 12345;//服务器端口号
 
-	public static void main(String[] args) {
-		System.out.println("客户端启动...");
-		System.out.println("当接收到服务器端字符为 \"OK\" 的时候, 客户端将终止\n");
-		while (true) {
-			Socket socket = null;
-			try {
-				//创建一个流套接字并将其连接到指定主机上的指定端口号
-				socket = new Socket(IP_ADDR, PORT);
+	static private Socket clientSocket;
 
-				//读取服务器端数据
-				DataInputStream input = new DataInputStream(socket.getInputStream());
-				//向服务器端发送数据
-				DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-				System.out.print("客户请输入: \t");
-				String str = new BufferedReader(new InputStreamReader(System.in)).readLine();
-				out.writeUTF(str);
+	public Client() {}
 
-				String ret = input.readUTF();
-				System.out.println("服务器端返回过来的是: " + ret);
-				// 如接收到 "OK" 则断开连接
-				if ("OK".equals(ret)) {
-					System.out.println("客户端将关闭连接");
-					Thread.sleep(500);
-					break;
-				}
+	public static void main(String[] args) throws Exception {
+		String serverIP;
+		serverIP = "localhost";
+		clientSocket = new Socket(serverIP, 6789);
+		Client client = new Client();
+		client.start();
+	}
 
-				out.close();
-				input.close();
-			} catch (Exception e) {
-				System.out.println("客户端异常:" + e.getMessage());
-			} finally {
-				if (socket != null) {
-					try {
-						socket.close();
-					} catch (IOException e) {
-						socket = null;
-						System.out.println("客户端 finally 异常:" + e.getMessage());
-					}
+	public void start() {
+		try {
+			Scanner scanner = new Scanner(System.in);
+			setName(scanner);
+
+			// 接收服务器端发送过来的信息的线程启动
+			ExecutorService exec = Executors.newCachedThreadPool();
+			exec.execute(new ListenrServser());
+
+			// 建立输出流，给服务端发信息
+			PrintWriter pw = new PrintWriter(
+					new OutputStreamWriter(clientSocket.getOutputStream(), "UTF-8"), true);
+
+			while(true) {
+				pw.println(scanner.nextLine());
+			}
+		} catch(Exception e) {
+			e.printStackTrace();
+		} finally {
+			if (clientSocket !=null) {
+				try {
+					clientSocket.close();
+				} catch(IOException e) {
+					e.printStackTrace();
 				}
 			}
 		}
 	}
+
+	private void setName(Scanner scan) throws Exception {
+		String name;
+		//创建输出流
+		PrintWriter pw = new PrintWriter(
+				new OutputStreamWriter(clientSocket.getOutputStream(), "UTF-8"),true);
+		//创建输入流
+		BufferedReader br = new BufferedReader(
+				new InputStreamReader(clientSocket.getInputStream(),"UTF-8"));
+
+		while(true) {
+			System.out.println("请创建您的昵称：");
+			name = scan.nextLine();
+			if (name.trim().equals("")) {
+				System.out.println("昵称不得为空");
+			} else {
+				pw.println(name);
+				String pass = br.readLine();
+				if (pass != null && (!pass.equals("OK"))) {
+					System.out.println("昵称已经被占用，请重新输入：");
+				} else {
+					System.out.println("昵称“"+name+"”已设置成功，可以开始聊天了");
+					break;
+				}
+			}
+		}
+	}
+
+	// 循环读取服务端发送过来的信息并输出到客户端的控制台
+	class ListenrServser implements Runnable {
+
+		@Override
+		public void run() {
+			try {
+				BufferedReader br = new BufferedReader(
+						new InputStreamReader(clientSocket.getInputStream(), "UTF-8"));
+				String msgString;
+				while((msgString = br.readLine())!= null) {
+					System.out.println(msgString);
+				}
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
 }
